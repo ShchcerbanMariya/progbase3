@@ -1,4 +1,5 @@
 *.swp
+data/
 *.*~
 project.lock.json
 .DS_Store

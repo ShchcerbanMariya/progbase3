@@ -24,8 +24,8 @@ public class QuestionsRepository
         {
             question.id = int.Parse(reader.GetString(0));
             question.body = reader.GetString(1);
-            question.userAskId = int.Parse(reader.GetString(2));
-            question.mainAnswerID = int.Parse(reader.GetString(3));
+            question.user.id = int.Parse(reader.GetString(2));
+            question.mainAnswer = int.Parse(reader.GetString(3));
             question.start = reader.GetDateTime(4);
             question.end = reader.GetDateTime(5);
         }
@@ -54,8 +54,8 @@ public class QuestionsRepository
             VALUES ($body, $userAskId, $mainAnswerId, $start, $end);
             SELECT last_insert_rowid();";
         command.Parameters.AddWithValue("$body", question.body);
-        command.Parameters.AddWithValue("$userAskID", question.userAskId);
-        command.Parameters.AddWithValue("$mainAnswerId", question.mainAnswerID);
+        command.Parameters.AddWithValue("$userAskID", question.user.id);
+        command.Parameters.AddWithValue("$mainAnswerId", question.mainAnswer);
         command.Parameters.AddWithValue("$start", question.start.ToString("o"));
         command.Parameters.AddWithValue("$question", question.end.ToString("o"));
 
@@ -103,8 +103,8 @@ public class QuestionsRepository
             Question question = new Question();
             question.id = int.Parse(reader.GetString(0));
             question.body = reader.GetString(1);
-            question.userAskId = int.Parse(reader.GetString(2));
-            question.mainAnswerID = int.Parse(reader.GetString(3));
+            question.user.id = int.Parse(reader.GetString(2));
+            question.mainAnswer = int.Parse(reader.GetString(3));
             question.start = reader.GetDateTime(4);
             question.end = reader.GetDateTime(5);
 

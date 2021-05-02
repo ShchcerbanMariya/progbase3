@@ -25,9 +25,9 @@ public class QuestionRepository
         {
             answer.id = int.Parse(reader.GetString(0));
             answer.body = reader.GetString(1);
-            answer.userID = int.Parse(reader.GetString(2));
+            answer.user.id = int.Parse(reader.GetString(2));
             answer.mainAnswer = bool.Parse(reader.GetString(3));
-            answer.questionId = int.Parse(reader.GetString(4));
+            answer.question.id = int.Parse(reader.GetString(4));
             answer.time = reader.GetDateTime(5);
         }
         else
@@ -55,9 +55,9 @@ public class QuestionRepository
             VALUES ($body, $userId, $mainAnswer, $questionId, $time);
             SELECT last_insert_rowid();";
         command.Parameters.AddWithValue("$body", answer.body);
-        command.Parameters.AddWithValue("$userID", answer.userID);
+        command.Parameters.AddWithValue("$userID", answer.user.id);
         command.Parameters.AddWithValue("$mainAnswerId", answer.mainAnswer);
-        command.Parameters.AddWithValue("$start", answer.questionId);
+        command.Parameters.AddWithValue("$start", answer.question.id);
         command.Parameters.AddWithValue("$question", answer.time.ToString("o"));
 
         long newId = (long)command.ExecuteScalar();
@@ -83,9 +83,9 @@ public class QuestionRepository
             Answer answer = new Answer();
             answer.id = int.Parse(reader.GetString(0));
             answer.body = reader.GetString(1);
-            answer.userID = int.Parse(reader.GetString(2));
+            answer.user.id = int.Parse(reader.GetString(2));
             answer.mainAnswer = bool.Parse(reader.GetString(3));
-            answer.questionId = int.Parse(reader.GetString(4));
+            answer.question.id = int.Parse(reader.GetString(4));
             answer.time = reader.GetDateTime(5);
 
             postsToExport.AddAnswer(answer);

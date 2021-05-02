@@ -11,6 +11,8 @@ namespace ConsoleApp
         public string name;
         public string password;
         public string role;
+        public Question[] questions;
+        public Answer[] answers;
         public User()
         {
             this.id = 0;
@@ -34,29 +36,38 @@ namespace ConsoleApp
     {
         public int id;
         public string body;
-        public int userAskId;
-        public int mainAnswerID;
+        public User user;
+        public int mainAnswer;
         public DateTime start;
         public DateTime end;
         public Question()
         {
             this.id = 0;
             this.body = "";
-            this.userAskId = 0;
-            this.mainAnswerID = 0;
+            this.user = null;
+            this.mainAnswer = 0;
         }
-        public Question(int id, string body, int userAskId, int mainAnswerID, DateTime start, DateTime end)
+        public Question(int id, string body, User user, int mainAnswer, DateTime start, DateTime end)
         {
             this.id = id;
             this.body = body;
-            this.userAskId = userAskId;
-            this.mainAnswerID = mainAnswerID;
+            this.user.id = user.id;
+            this.mainAnswer = mainAnswer;
+            this.start = start;
+            this.end = end;
+        }
+        public Question(int id, string body, int user, int mainAnswer, DateTime start, DateTime end)
+        {
+            this.id = id;
+            this.body = body;
+            this.user.id = user;
+            this.mainAnswer = mainAnswer;
             this.start = start;
             this.end = end;
         }
         public override string ToString()
         {
-            return $"{id},{body},{userAskId},{mainAnswerID},{start},{end}";
+            return $"{id},{body},{user},{mainAnswer},{start},{end}";
         }
 
     }
@@ -64,30 +75,39 @@ namespace ConsoleApp
     {
         public int id;
         public string body;
-        public int userID;
+        public User user;
         public bool mainAnswer;
-        public int questionId;
+        public Question question;
         public DateTime time;
         public Answer()
         {
             this.id = 0;
             this.body = "";
-            this.userID = 0;
+            this.user = null;
             this.mainAnswer = false;
-            this.questionId = 0;
+            this.question = null;
         }
-        public Answer(int id, string body, int userID, bool mainAnswer, int questionId, DateTime time)
+        public Answer(int id, string body, User user, bool mainAnswer, Question question, DateTime time)
         {
             this.id = id;
             this.body = body;
-            this.userID = userID;
+            this.user.id = user.id;
             this.mainAnswer = mainAnswer;
-            this.questionId = questionId;
+            this.question = question;
+            this.time = time;
+        }
+         public Answer(int id, string body, int user, bool mainAnswer, int question, DateTime time)
+        {
+            this.id = id;
+            this.body = body;
+            this.user.id = user;
+            this.mainAnswer = mainAnswer;
+            this.question.id = question;
             this.time = time;
         }
         public override string ToString()
         {
-            return $"{id}, {body}, {userID}, {questionId}, {time} ";
+            return $"{id}, {body}, {user}, {question}, {time} ";
         }
 
     }
