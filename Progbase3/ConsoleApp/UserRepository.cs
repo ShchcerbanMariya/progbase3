@@ -106,4 +106,34 @@ public class UserRepository
         reader.Close();
         return postsToExport;
     }
+   
+    /* static User ConvertToUser(string s)
+     {
+         string[] array = s.Split(',');
+         if (array.Length == 6)
+         {
+             int id = int.Parse(array[0]);
+             string name = array[1];
+             string password = array[2];
+             string role = array[3];
+             Random r = new Random();
+             string databaseFileName = "/home/mariya/Desktop/projects/progbase3/Progbase3/data/dataBase";
+             SqliteConnection connection = new SqliteConnection($"Data Source={databaseFileName}");
+             connection.Open();
+             QuestionsRepository repository = new QuestionsRepository(connection);
+             int lastId = repository.GetLastId();
+
+             int size = r.Next(0, 7);
+             Question[] arrayofq= new Question[size];
+             for(int i =0; i<size; i++)
+             {
+               int num = r.Next(1, lastId + 1);
+               arrayofq[i] = repository.GetById(num);
+             }
+
+             User us = new User(id, name, password, role, arrayofq);
+             return us;
+         }
+         return new User();
+     }*/
 }

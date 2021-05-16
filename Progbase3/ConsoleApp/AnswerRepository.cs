@@ -4,11 +4,11 @@ using System.Data;
 using ConsoleApp;
 using Microsoft.Data.Sqlite;
 
-public class QuestionRepository
+public class AnswerRepository
 {
 
     private SqliteConnection connection;
-    public QuestionRepository(SqliteConnection connection)
+    public AnswerRepository(SqliteConnection connection)
     {
         this.connection = connection;
     }
@@ -92,5 +92,48 @@ public class QuestionRepository
         }
         reader.Close();
         return postsToExport;
+    }
+    public int GetLastId()
+    {
+        SqliteCommand command = connection.CreateCommand();
+        command.CommandText = @"SELECT * 
+        FROM answers 
+        WHERE id = (SELECT max(id) FROM answers)";
+        //command.Parameters.AddWithValue("$id", );
+        SqliteDataReader reader = command.ExecuteReader();
+        Answer a = new Answer();
+        if (reader.Read())
+        {
+            a.id = int.Parse(reader.GetString(0));
+        }
+        else
+        {
+            a.id = 0;
+
+        }
+        reader.Close();
+        return a.id;
+    }
+    public ListAnswers GetAllById(int valueX)
+    {
+        SqliteCommand command = this.connection.CreateCommand();
+        command.CommandText = @"SELECT * 
+        FROM answers 
+        WHERE userID = $valueX";
+        command.Parameters.AddWithValue("$valueX", valueX);
+        SqliteDataReader reader = command.ExecuteReader();
+        ListAnswers posts = new ListAnswers();
+        while (reader.Read())
+        {
+            Answer answer = new Answer();
+            answer.id = int.Parse(reader.GetString(0));
+            answer.body = reader.GetString(1);
+            answer.mainAnswer = bool.Parse(reader.GetString(3));
+            //answer.question = int.Parse(reader.GetString(4));
+            answer.time = reader.GetDateTime(5);
+            posts.AddAnswer(answer);
+        }
+        reader.Close();
+        return posts;
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
+using System.Collections.Generic;
 using Microsoft.Data.Sqlite;
+using System.Data;
 
 
 namespace ConsoleApp
@@ -11,14 +13,16 @@ namespace ConsoleApp
         public string name;
         public string password;
         public string role;
-        public Question[] questions;
-        public Answer[] answers;
+        public List<Question> questions = new List<Question>();
+        public List<Answer> answers = new List<Answer>();
         public User()
         {
             this.id = 0;
             this.name = "";
             this.password = "";
             this.role = "user";
+            this.questions = null;
+            this.answers = null;
         }
         public User(int id, string name, string password, string role)
         {
@@ -27,16 +31,27 @@ namespace ConsoleApp
             this.password = password;
             this.role = role;
         }
+        public User(int id, string name, string password, string role, List<Question> questions, List<Answer> answers)
+        {
+            this.id = id;
+            this.name = name;
+            this.password = password;
+            this.role = role;
+            this.questions = new List<Question>(questions);
+            this.answers = new List<Answer>(answers);
+        }
         public override string ToString()
         {
             return $"{id}, {name}, {password}, {role}";
         }
     }
+
     public class Question
     {
         public int id;
         public string body;
         public User user;
+        public List<Answer> listAnswers = new List<Answer>();
         public int mainAnswer;
         public DateTime start;
         public DateTime end;
@@ -65,6 +80,15 @@ namespace ConsoleApp
             this.start = start;
             this.end = end;
         }
+        public Question(int id, string body, int mainAnswer, DateTime start, DateTime end)
+        {
+            this.id = id;
+            this.body = body;
+
+            this.mainAnswer = mainAnswer;
+            this.start = start;
+            this.end = end;
+        }
         public override string ToString()
         {
             return $"{id},{body},{user},{mainAnswer},{start},{end}";
@@ -76,6 +100,7 @@ namespace ConsoleApp
         public int id;
         public string body;
         public User user;
+        public int userID;
         public bool mainAnswer;
         public Question question;
         public DateTime time;
@@ -91,12 +116,12 @@ namespace ConsoleApp
         {
             this.id = id;
             this.body = body;
-            this.user.id = user.id;
+            this.user = user;
             this.mainAnswer = mainAnswer;
             this.question = question;
             this.time = time;
         }
-         public Answer(int id, string body, int user, bool mainAnswer, int question, DateTime time)
+        public Answer(int id, string body, int user, bool mainAnswer, int question, DateTime time)
         {
             this.id = id;
             this.body = body;
@@ -105,9 +130,16 @@ namespace ConsoleApp
             this.question.id = question;
             this.time = time;
         }
+         public Answer(int id, string body, bool mainAnswer, DateTime time)
+        {
+            this.id = id;
+            this.body = body;
+            this.mainAnswer = mainAnswer;
+            this.time = time;
+        }
         public override string ToString()
         {
-            return $"{id}, {body}, {user}, {question}, {time} ";
+            return $"{id},{body},{user},{question},{time}, ";
         }
 
     }
@@ -130,6 +162,12 @@ namespace ConsoleApp
         }
         static void GenerateUser(string nameFile, int data, int length, int lengthpas)
         {
+            string databaseFileName = "/home/mariya/Desktop/projects/progbase3/Progbase3/data/dataBase";
+            SqliteConnection connection = new SqliteConnection($"Data Source={databaseFileName}");
+            connection.Open();
+            QuestionsRepository rep = new QuestionsRepository(connection);
+            AnswerRepository repa = new AnswerRepository(connection);
+            ListQuestions l = new ListQuestions();
             StreamWriter sw = new StreamWriter(nameFile);
             string s = "";
             for (int i = 0; i <= data; i++)
@@ -152,12 +190,29 @@ namespace ConsoleApp
                     {
                         role = "user";
                     }
-                    User newUs = new User(i, GenerateString(length), GenerateString(lengthpas), role);
-                    s = newUs.ToString();
-                    sw.WriteLine(s);
+                    Random r = new Random();
+                    string sum = $"{i},{GenerateString(length)},{GenerateString(lengthpas)},{role}";
+                    sw.WriteLine(sum);
                 }
             }
             sw.Close();
+        }
+        static Question ConvertToQuestion(string s)
+        {
+            string[] array = s.Split(',');
+            if (array.Length == 6)
+            {
+                int id = int.Parse(array[0]);
+                string body = array[1];
+                int userAskId = int.Parse(array[2]);
+                int mainAnswer = int.Parse(array[3]);
+                DateTime start = DateTime.Parse(array[4]);
+                DateTime end = DateTime.Parse(array[5]);
+
+                Question question = new Question(id, body, userAskId, mainAnswer, start, end);
+                return question;
+            }
+            return new Question();
         }
 
         static DateTime GenerateDate(DateTime firstLim, DateTime secondLim)
@@ -197,6 +252,42 @@ namespace ConsoleApp
                     }
 
                     Question newUs = new Question(i, GenerateString(length), generateId, 0, firstDate, secondDate);
+                    s = newUs.ToString();
+                    sw.WriteLine(s);
+                }
+            }
+            sw.Close();
+        }
+        static void GenerateQuestionWithUser(string nameFile, int data, int length, DateTime firstLim, DateTime secondLim)
+        {
+            StreamWriter sw = new StreamWriter(nameFile);
+            string s = "";
+            for (int i = 0; i <= data; i++)
+            {
+                if (i == 0)
+                {
+                    s = "id, body, userAskId, mainAnswerID, start, end";
+                    sw.WriteLine(s);
+                }
+                else
+                {
+                    int num = i;
+                    Random rand = new Random();
+                    string databaseFileName = "/home/mariya/Desktop/projects/progbase3/Progbase3/data/dataBase";
+                    SqliteConnection connection = new SqliteConnection($"Data Source={databaseFileName}");
+                    connection.Open();
+                    UserRepository repository = new UserRepository(connection);
+                    int lastId = repository.GetLastId();
+                    int generateId = rand.Next(1, lastId + 1);
+                    DateTime firstDate = GenerateDate(firstLim, secondLim);
+                    DateTime secondDate = GenerateDate(firstLim, secondLim);
+                    while (firstDate > secondDate)
+                    {
+                        secondDate = GenerateDate(firstLim, secondLim);
+                    }
+                    User curUs = repository.GetById(generateId);
+
+                    Question newUs = new Question(i, GenerateString(length), curUs, 0, firstDate, secondDate);
                     s = newUs.ToString();
                     sw.WriteLine(s);
                 }
@@ -262,8 +353,37 @@ namespace ConsoleApp
                 default:
                     Console.WriteLine("incorect table");
                     break;
+            }/*
+            string databaseFileName = "/home/mariya/Desktop/projects/progbase3/Progbase3/data/dataBase";
+            SqliteConnection connection = new SqliteConnection($"Data Source={databaseFileName}");
+            connection.Open();
+            ConnectionState state = connection.State;
+            QuestionsRepository repository = new QuestionsRepository(connection);
+            Console.WriteLine("enter id:");
+            int value = int.Parse(Console.ReadLine());
+            ListQuestions questionsCsv = repository.GetAllById(value);
+            if (questionsCsv.GetSize() == 0)
+            {
+                Console.WriteLine("There is no data to export");
             }
-
+            else
+            {
+                string filePath = "./export.csv";
+                StreamWriter sw = new StreamWriter(filePath);
+                string s = "";
+                // string s = "id,author,book,year,createdAt";
+                //sw.WriteLine(s);
+                for (int i = 0; i < questionsCsv.GetSize(); i++)
+                {
+                    Question question = questionsCsv.GetQuestion(i);
+                    s = $"{question.id},{question.body},{question.user},{question.mainAnswer},{question.start},{question.end}";
+                    if (i + 1 == questionsCsv.GetSize())
+                        sw.Write(s);
+                    else
+                        sw.WriteLine(s);
+                }
+                sw.Close();
+            }*/
         }
         static void ProcessUser(string input)
         {

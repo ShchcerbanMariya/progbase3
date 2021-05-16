@@ -11,20 +11,20 @@ public class QuestionsRepository
     {
         this.connection = connection;
     }
+    
 
     public Question GetById(int id)
     {
         SqliteCommand command = this.connection.CreateCommand();
         command.CommandText = @"SELECT * FROM questions WHERE id = $id";
         command.Parameters.AddWithValue("$id", id);
-
+        User user = new User();
         SqliteDataReader reader = command.ExecuteReader();
         Question question = new Question();
         if (reader.Read())
         {
             question.id = int.Parse(reader.GetString(0));
             question.body = reader.GetString(1);
-            question.user.id = int.Parse(reader.GetString(2));
             question.mainAnswer = int.Parse(reader.GetString(3));
             question.start = reader.GetDateTime(4);
             question.end = reader.GetDateTime(5);
@@ -54,7 +54,7 @@ public class QuestionsRepository
             VALUES ($body, $userAskId, $mainAnswerId, $start, $end);
             SELECT last_insert_rowid();";
         command.Parameters.AddWithValue("$body", question.body);
-        command.Parameters.AddWithValue("$userAskID", question.user.id);
+        command.Parameters.AddWithValue("$userAskID", question.user);
         command.Parameters.AddWithValue("$mainAnswerId", question.mainAnswer);
         command.Parameters.AddWithValue("$start", question.start.ToString("o"));
         command.Parameters.AddWithValue("$question", question.end.ToString("o"));
@@ -75,22 +75,22 @@ public class QuestionsRepository
     {
         SqliteCommand command = connection.CreateCommand();
         command.CommandText = @"SELECT * 
-        FROM users 
-        WHERE id = (SELECT max(id) FROM users)";
+        FROM questions 
+        WHERE id = (SELECT max(id) FROM questions)";
         //command.Parameters.AddWithValue("$id", );
         SqliteDataReader reader = command.ExecuteReader();
-        User user = new User();
+        Question q = new Question();
         if (reader.Read())
         {
-            user.id = int.Parse(reader.GetString(0));
+            q.id = int.Parse(reader.GetString(0));
         }
         else
         {
-            user.id = 0;
+            q.id = 0;
 
         }
         reader.Close();
-        return user.id;
+        return q.id;
     }
     public ListQuestions GetExport(DateTime valueX)
     {
@@ -112,5 +112,29 @@ public class QuestionsRepository
         }
         reader.Close();
         return postsToExport;
+    }
+    public ListQuestions GetAllById(int valueX)
+    {
+        SqliteCommand command = this.connection.CreateCommand();
+        command.CommandText = @"SELECT * 
+        FROM questions 
+        WHERE userAskId = $valueX";
+        command.Parameters.AddWithValue("$valueX", valueX);
+        SqliteDataReader reader = command.ExecuteReader();
+        ListQuestions posts = new ListQuestions();
+        while (reader.Read())
+        {
+            Question question = new Question();
+            User us = new User();
+            question.id = int.Parse(reader.GetString(0));
+            question.body = reader.GetString(1);
+            question.mainAnswer = int.Parse(reader.GetString(3));
+            question.start = reader.GetDateTime(4);
+            question.end = reader.GetDateTime(5);
+
+            posts.AddQuestion(question);
+        }
+        reader.Close();
+        return posts;
     }
 }
