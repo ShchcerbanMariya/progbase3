@@ -1,6 +1,5 @@
 using System;
-using System.IO;
-using System.Data;
+using System.Collections.Generic;
 using ConsoleApp;
 using Microsoft.Data.Sqlite;
 
@@ -10,7 +9,7 @@ public class AnswerRepository
     private SqliteConnection connection;
     public AnswerRepository(SqliteConnection connection)
     {
-        this.connection = connection;
+        this.connection = connection ;
     }
 
     public Answer GetById(int id)
@@ -72,12 +71,13 @@ public class AnswerRepository
         int pages = (int)count / pageSize;
         return pages;
     }
-    public ListAnswers GetExport(DateTime valueX)
+    public List<Answer> GetExport(DateTime valueX)
     {
+        connection.Open();
         SqliteCommand command = this.connection.CreateCommand();
         command.CommandText = @"SELECT * FROM answers";
         SqliteDataReader reader = command.ExecuteReader();
-        ListAnswers postsToExport = new ListAnswers();
+        List<Answer> postsToExport = new List<Answer>();
         while (reader.Read())
         {
             Answer answer = new Answer();
@@ -87,8 +87,7 @@ public class AnswerRepository
             answer.mainAnswer = bool.Parse(reader.GetString(3));
             answer.question.id = int.Parse(reader.GetString(4));
             answer.time = reader.GetDateTime(5);
-
-            postsToExport.AddAnswer(answer);
+            postsToExport.Add(answer);
         }
         reader.Close();
         return postsToExport;
@@ -114,15 +113,16 @@ public class AnswerRepository
         reader.Close();
         return a.id;
     }
-    public ListAnswers GetAllById(int valueX)
+    public List<Answer> GetAllUserAns(int user_id)
     {
+        connection.Open();
         SqliteCommand command = this.connection.CreateCommand();
         command.CommandText = @"SELECT * 
         FROM answers 
-        WHERE userID = $valueX";
-        command.Parameters.AddWithValue("$valueX", valueX);
+        WHERE user_id = $valueX";
+        command.Parameters.AddWithValue("$valueX", user_id);
         SqliteDataReader reader = command.ExecuteReader();
-        ListAnswers posts = new ListAnswers();
+        List<Answer> posts = new List<Answer>();
         while (reader.Read())
         {
             Answer answer = new Answer();
@@ -130,8 +130,35 @@ public class AnswerRepository
             answer.body = reader.GetString(1);
             answer.mainAnswer = bool.Parse(reader.GetString(3));
             //answer.question = int.Parse(reader.GetString(4));
-            answer.time = reader.GetDateTime(5);
-            posts.AddAnswer(answer);
+            if(!reader.IsDBNull(5))
+                if(reader.GetString(5) != "")
+                    answer.time = reader.GetDateTime(5);
+            posts.Add(answer);
+        }
+        reader.Close();
+        connection.Close();
+        return posts;
+    }
+    public List<Answer> GetByQuestionId(int q_id)
+    {
+        connection.Open();
+        SqliteCommand command = this.connection.CreateCommand();
+        command.CommandText = @"SELECT * 
+        FROM answers 
+        WHERE question_id = $question_id";
+        command.Parameters.AddWithValue("$question_id", q_id);
+        SqliteDataReader reader = command.ExecuteReader();
+        List<Answer> posts = new List<Answer>();
+        while (reader.Read())
+        {
+            Answer answer = new Answer();
+            answer.id = int.Parse(reader.GetString(0));
+            answer.body = reader.GetString(1);
+            answer.mainAnswer = bool.Parse(reader.GetString(3));
+            //answer.question = int.Parse(reader.GetString(4));
+            if(!reader.IsDBNull(5))
+                answer.time = reader.GetDateTime(5);
+            posts.Add(answer);
         }
         reader.Close();
         return posts;

@@ -1,7 +1,6 @@
 using System;
-using System.IO;
-using System.Data;
 using ConsoleApp;
+using System.Collections.Generic;
 using Microsoft.Data.Sqlite;
 public class QuestionsRepository
 {
@@ -11,10 +10,9 @@ public class QuestionsRepository
     {
         this.connection = connection;
     }
-    
-
     public Question GetById(int id)
     {
+        connection.Open();
         SqliteCommand command = this.connection.CreateCommand();
         command.CommandText = @"SELECT * FROM questions WHERE id = $id";
         command.Parameters.AddWithValue("$id", id);
@@ -25,9 +23,8 @@ public class QuestionsRepository
         {
             question.id = int.Parse(reader.GetString(0));
             question.body = reader.GetString(1);
-            question.mainAnswer = int.Parse(reader.GetString(3));
-            question.start = reader.GetDateTime(4);
-            question.end = reader.GetDateTime(5);
+            question.start = Convert.ToDateTime(reader.GetDateTime(3));
+            question.end = Convert.ToDateTime(reader.GetDateTime(4));
         }
         else
         {
@@ -40,6 +37,7 @@ public class QuestionsRepository
     }
     public int DeleteById(int id)
     {
+        connection.Open();
         SqliteCommand command = connection.CreateCommand();
         command.CommandText = @"DELETE FROM questions WHERE id = $id";
         command.Parameters.AddWithValue("$id", id);
@@ -55,7 +53,7 @@ public class QuestionsRepository
             SELECT last_insert_rowid();";
         command.Parameters.AddWithValue("$body", question.body);
         command.Parameters.AddWithValue("$userAskID", question.user);
-        command.Parameters.AddWithValue("$mainAnswerId", question.mainAnswer);
+        //command.Parameters.AddWithValue("$mainAnswerId", question.mainAnswer);
         command.Parameters.AddWithValue("$start", question.start.ToString("o"));
         command.Parameters.AddWithValue("$question", question.end.ToString("o"));
 
@@ -92,49 +90,73 @@ public class QuestionsRepository
         reader.Close();
         return q.id;
     }
-    public ListQuestions GetExport(DateTime valueX)
+    public List<Question> GetExport(DateTime valueX)
     {
+        connection.Open();
         SqliteCommand command = this.connection.CreateCommand();
         command.CommandText = @"SELECT * FROM questions";
         SqliteDataReader reader = command.ExecuteReader();
-        ListQuestions postsToExport = new ListQuestions();
+        List<Question> postsToExport = new List<Question>();
         while (reader.Read())
         {
             Question question = new Question();
             question.id = int.Parse(reader.GetString(0));
             question.body = reader.GetString(1);
             question.user.id = int.Parse(reader.GetString(2));
-            question.mainAnswer = int.Parse(reader.GetString(3));
+            //question.mainAnswer = int.Parse(reader.GetString(3));
             question.start = reader.GetDateTime(4);
             question.end = reader.GetDateTime(5);
 
-            postsToExport.AddQuestion(question);
+            postsToExport.Add(question);
         }
         reader.Close();
         return postsToExport;
     }
-    public ListQuestions GetAllById(int valueX)
+    public List<Question> GetAllByUser(int user_id)
     {
-        SqliteCommand command = this.connection.CreateCommand();
+        connection.Open();
+        SqliteCommand command = connection.CreateCommand();
         command.CommandText = @"SELECT * 
         FROM questions 
-        WHERE userAskId = $valueX";
-        command.Parameters.AddWithValue("$valueX", valueX);
+        WHERE user_id = $user_id";
+        command.Parameters.AddWithValue("$user_id", user_id);
         SqliteDataReader reader = command.ExecuteReader();
-        ListQuestions posts = new ListQuestions();
+        List<Question> posts = new List<Question>();
         while (reader.Read())
         {
             Question question = new Question();
-            User us = new User();
             question.id = int.Parse(reader.GetString(0));
             question.body = reader.GetString(1);
-            question.mainAnswer = int.Parse(reader.GetString(3));
-            question.start = reader.GetDateTime(4);
-            question.end = reader.GetDateTime(5);
-
-            posts.AddQuestion(question);
+            question.start = reader.GetDateTime(3);
+            question.end = reader.GetDateTime(4);
+            posts.Add(question);
         }
         reader.Close();
+        connection.Close();
         return posts;
+    }
+    public Question GetByAnswer(int ans_id)
+    {
+        connection.Open();
+        SqliteCommand command = this.connection.CreateCommand();
+        command.CommandText = @"SELECT questions.id, questions.body, questions.startData, questions.endData FROM questions CROSS JOIN answers WHERE questions.id = answers.question_id AND answers.id = $id";
+        command.Parameters.AddWithValue("$id", ans_id);
+        User user = new User();
+        SqliteDataReader reader = command.ExecuteReader();
+        Question question = new Question();
+        if (reader.Read())
+        {
+            question.id = int.Parse(reader.GetString(0));
+            question.body = reader.GetString(1);
+            question.start = reader.GetDateTime(2);
+            question.end = reader.GetDateTime(3);
+        }
+        else
+        {
+            question = null;
+
+        }
+        reader.Close();
+        return question;
     }
 }
