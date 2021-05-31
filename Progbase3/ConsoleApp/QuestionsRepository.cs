@@ -48,14 +48,14 @@ public class QuestionsRepository
     public int Insert(Question question)
     {
         SqliteCommand command = this.connection.CreateCommand();
-        command.CommandText = @"INSERT INTO questions (body, userAskId, mainAnswerId, start, end)
-            VALUES ($body, $userAskId, $mainAnswerId, $start, $end);
+        command.CommandText = @"INSERT INTO questions (body, user_id, startData, endData)
+            VALUES ($body, $user_id, $startData, $endData);
             SELECT last_insert_rowid();";
         command.Parameters.AddWithValue("$body", question.body);
-        command.Parameters.AddWithValue("$userAskID", question.user);
+        command.Parameters.AddWithValue("$user_id", question.user.id);
         //command.Parameters.AddWithValue("$mainAnswerId", question.mainAnswer);
-        command.Parameters.AddWithValue("$start", question.start.ToString("o"));
-        command.Parameters.AddWithValue("$question", question.end.ToString("o"));
+        command.Parameters.AddWithValue("$startData", question.start.ToString("o"));
+        command.Parameters.AddWithValue("$endData", question.end.ToString("o"));
 
         long newId = (long)command.ExecuteScalar();
         return (int)newId;
@@ -139,7 +139,9 @@ public class QuestionsRepository
     {
         connection.Open();
         SqliteCommand command = this.connection.CreateCommand();
-        command.CommandText = @"SELECT questions.id, questions.body, questions.startData, questions.endData FROM questions CROSS JOIN answers WHERE questions.id = answers.question_id AND answers.id = $id";
+        command.CommandText = @"SELECT questions.id, questions.body, questions.startData, questions.endData 
+        FROM questions CROSS JOIN answers 
+        WHERE questions.id = answers.question_id AND answers.id = $id";
         command.Parameters.AddWithValue("$id", ans_id);
         User user = new User();
         SqliteDataReader reader = command.ExecuteReader();
@@ -158,5 +160,16 @@ public class QuestionsRepository
         }
         reader.Close();
         return question;
+    }
+    public int UpdateQuestion(Question question)
+    {
+        connection.Open();
+        SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+        @"UPDATE questions SET body = $body WHERE id = $id;
+        SELECT last_insert_rowid();";
+        command.Parameters.AddWithValue("$body", question.body);
+        command.Parameters.AddWithValue("$id", question.id);
+        return (int)(long)command.ExecuteScalar();
     }
 }
