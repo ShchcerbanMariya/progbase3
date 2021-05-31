@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ConsoleApp;
 using Microsoft.Data.Sqlite;
+using System.Globalization;
 
 public class AnswerRepository
 {
@@ -40,6 +41,7 @@ public class AnswerRepository
     }
     public int DeleteById(int id)
     {
+        connection.Open();
         SqliteCommand command = connection.CreateCommand();
         command.CommandText = @"DELETE FROM answers WHERE id = $id";
         command.Parameters.AddWithValue("$id", id);
@@ -50,17 +52,26 @@ public class AnswerRepository
     public int Insert(Answer answer)
     {
         SqliteCommand command = this.connection.CreateCommand();
-        command.CommandText = @"INSERT INTO questions (body, userId, mainAnswer, questionId, time)
-            VALUES ($body, $userId, $mainAnswer, $questionId, $time);
+        command.CommandText = @"INSERT INTO answers (body, user_id, mainAnswer, question_id, creationTime)
+            VALUES ($body, $user_id, $mainAnswer,  $question_id, $creationTime);
             SELECT last_insert_rowid();";
         command.Parameters.AddWithValue("$body", answer.body);
-        command.Parameters.AddWithValue("$userID", answer.user.id);
-        command.Parameters.AddWithValue("$mainAnswerId", answer.mainAnswer);
-        command.Parameters.AddWithValue("$start", answer.question.id);
-        command.Parameters.AddWithValue("$question", answer.time.ToString("o"));
+        command.Parameters.AddWithValue("$user_id", answer.user.id);
+        command.Parameters.AddWithValue("$mainAnswer", Convert.ToInt32(answer.mainAnswer));
+        command.Parameters.AddWithValue("$question_id", answer.question.id);
+        command.Parameters.AddWithValue("$creationTime", answer.time.ToString(""));
 
         long newId = (long)command.ExecuteScalar();
         return (int)newId;
+    }
+    public int DeleteAllAnswersOfQuestion(int q_id)
+    {
+        SqliteCommand command = connection.CreateCommand();
+        command.CommandText = @"DELETE FROM answers WHERE question_id = $id";
+        command.Parameters.AddWithValue("$id", q_id);
+
+        int nChanged = command.ExecuteNonQuery();
+        return nChanged;
     }
     public int GetTotalPages()
     {
@@ -128,11 +139,11 @@ public class AnswerRepository
             Answer answer = new Answer();
             answer.id = int.Parse(reader.GetString(0));
             answer.body = reader.GetString(1);
-            answer.mainAnswer = bool.Parse(reader.GetString(3));
+            answer.mainAnswer = Convert.ToBoolean(int.Parse(reader.GetString(3)));
             //answer.question = int.Parse(reader.GetString(4));
             if(!reader.IsDBNull(5))
                 if(reader.GetString(5) != "")
-                    answer.time = reader.GetDateTime(5);
+                    answer.time = DateTime.ParseExact(reader.GetString(5), "dd.MM.yyyy HH:mm:ss", CultureInfo.InvariantCulture);
             posts.Add(answer);
         }
         reader.Close();
@@ -154,13 +165,29 @@ public class AnswerRepository
             Answer answer = new Answer();
             answer.id = int.Parse(reader.GetString(0));
             answer.body = reader.GetString(1);
-            answer.mainAnswer = bool.Parse(reader.GetString(3));
+            if (!reader.IsDBNull(5))
+                answer.mainAnswer = Convert.ToBoolean(int.Parse(reader.GetString(3)));
             //answer.question = int.Parse(reader.GetString(4));
-            if(!reader.IsDBNull(5))
-                answer.time = reader.GetDateTime(5);
+            if (!reader.IsDBNull(5))
+                answer.time = DateTime.ParseExact(reader.GetString(5), "dd.MM.yyyy HH:mm:ss", CultureInfo.InvariantCulture);
             posts.Add(answer);
         }
         reader.Close();
         return posts;
+    }
+    public int UpdateAnswer(Answer answer)
+    {
+        connection.Open();
+        SqliteCommand command = connection.CreateCommand();
+        command.CommandText =
+        @"
+                UPDATE answers SET body = $body, mainAnswer = $mainAnswer WHERE id = $id;
+ 
+                SELECT last_insert_rowid();
+            ";
+        command.Parameters.AddWithValue("$body", answer.body);
+        command.Parameters.AddWithValue("$id", answer.id);
+        command.Parameters.AddWithValue("$mainAnswer", Convert.ToInt32(answer.mainAnswer));
+        return (int)(long)command.ExecuteScalar();
     }
 }
