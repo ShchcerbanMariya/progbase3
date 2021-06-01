@@ -151,358 +151,15 @@ namespace ConsoleApp
 
         static Window mainWindow;
 
+        static CheckBox isMainAnswer;
+
         static UserRepository userRepository;
         static AnswerRepository answerRepository;
         static QuestionsRepository questionRepository;
 
         const int pageSize = 1;
         static int currentPage = 1;
-        //static string GenerateString(int length)
-        //{
-        //    var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        //    var stringChars = new char[length];
-        //    var random = new Random();
-
-        //    for (int i = 0; i < stringChars.Length; i++)
-        //    {
-        //        stringChars[i] = chars[random.Next(chars.Length)];
-        //    }
-        //    string finalString = new String(stringChars);
-        //    return finalString;
-        //}
-        //static void GenerateUser(string nameFile, int data, int length, int lengthpas)
-        //{
-        //    string databaseFileName = "/home/mariya/Desktop/projects/progbase3/Progbase3/data/dataBase";
-        //    SqliteConnection connection = new SqliteConnection($"Data Source={databaseFileName}");
-        //    connection.Open();
-        //    QuestionsRepository rep = new QuestionsRepository(connection);
-        //    AnswerRepository repa = new AnswerRepository(connection);
-        //    StreamWriter sw = new StreamWriter(nameFile);
-        //    string s = "";
-        //    for (int i = 0; i <= data; i++)
-        //    {
-        //        if (i == 0)
-        //        {
-        //            s = "id, name, password, role";
-        //            sw.WriteLine(s);
-        //        }
-        //        else
-        //        {
-        //            int num = i;
-        //            Random rand = new Random();
-        //            string role;
-        //            if (rand.Next(0, 5) == 0)
-        //            {
-        //                role = "moderator";
-        //            }
-        //            else
-        //            {
-        //                role = "user";
-        //            }
-        //            Random r = new Random();
-        //            string sum = $"{i},{GenerateString(length)},{GenerateString(lengthpas)},{role}";
-        //            sw.WriteLine(sum);
-        //        }
-        //    }
-        //    sw.Close();
-        //}
-        ////static Question ConvertToQuestion(string s)
-        ////{
-        ////    string[] array = s.Split(',');
-        ////    if (array.Length == 6)
-        ////    {
-        ////        int id = int.Parse(array[0]);
-        ////        string body = array[1];
-        ////        int userAskId = int.Parse(array[2]);
-        ////        int mainAnswer = int.Parse(array[3]);
-        ////        DateTime start = DateTime.Parse(array[4]);
-        ////        DateTime end = DateTime.Parse(array[5]);
-
-        ////        Question question = new Question(id, body, userAskId, mainAnswer, start, end);
-        ////        return question;
-        ////    }
-        ////    return new Question();
-        ////}
-
-        //static DateTime GenerateDate(DateTime firstLim, DateTime secondLim)
-        //{
-        //    Random rand = new Random();
-        //    double limits = (secondLim - firstLim).TotalDays;
-        //    double addDays = rand.Next(1, (int)limits);
-        //    DateTime newDate = firstLim.AddDays(addDays);
-        //    return newDate;
-        //}
-        //static void GenerateQuestion(string nameFile, int data, int length, DateTime firstLim, DateTime secondLim)
-        //{
-        //    StreamWriter sw = new StreamWriter(nameFile);
-        //    string s = "";
-        //    for (int i = 0; i <= data; i++)
-        //    {
-        //        if (i == 0)
-        //        {
-        //            s = "id, body, userAskId, mainAnswerID, start, end";
-        //            sw.WriteLine(s);
-        //        }
-        //        else
-        //        {
-        //            int num = i;
-        //            Random rand = new Random();
-        //            string databaseFileName = "/home/mariya/Desktop/projects/progbase3/Progbase3/data/dataBase";
-        //            SqliteConnection connection = new SqliteConnection($"Data Source={databaseFileName}");
-        //            connection.Open();
-        //            UserRepository repository = new UserRepository(connection);
-        //            int lastId = repository.GetLastId();
-        //            int generateId = rand.Next(1, lastId + 1);
-        //            DateTime firstDate = GenerateDate(firstLim, secondLim);
-        //            DateTime secondDate = GenerateDate(firstLim, secondLim);
-        //            while (firstDate > secondDate)
-        //            {
-        //                secondDate = GenerateDate(firstLim, secondLim);
-        //            }
-
-        //            Question newUs = new Question(i, GenerateString(length), generateId, 0, firstDate, secondDate);
-        //            s = newUs.ToString();
-        //            sw.WriteLine(s);
-        //        }
-        //    }
-        //    sw.Close();
-        //}
-        //static void GenerateQuestionWithUser(string nameFile, int data, int length, DateTime firstLim, DateTime secondLim)
-        //{
-        //    StreamWriter sw = new StreamWriter(nameFile);
-        //    string s = "";
-        //    for (int i = 0; i <= data; i++)
-        //    {
-        //        if (i == 0)
-        //        {
-        //            s = "id, body, userAskId, mainAnswerID, start, end";
-        //            sw.WriteLine(s);
-        //        }
-        //        else
-        //        {
-        //            int num = i;
-        //            Random rand = new Random();
-        //            string databaseFileName = "/home/mariya/Desktop/projects/progbase3/Progbase3/data/dataBase";
-        //            SqliteConnection connection = new SqliteConnection($"Data Source={databaseFileName}");
-        //            connection.Open();
-        //            UserRepository repository = new UserRepository(connection);
-        //            int lastId = repository.GetLastId();
-        //            int generateId = rand.Next(1, lastId + 1);
-        //            DateTime firstDate = GenerateDate(firstLim, secondLim);
-        //            DateTime secondDate = GenerateDate(firstLim, secondLim);
-        //            while (firstDate > secondDate)
-        //            {
-        //                secondDate = GenerateDate(firstLim, secondLim);
-        //            }
-        //            User curUs = repository.GetById(generateId);
-
-        //            Question newUs = new Question(i, GenerateString(length), curUs, 0, firstDate, secondDate);
-        //            s = newUs.ToString();
-        //            sw.WriteLine(s);
-        //        }
-        //    }
-        //    sw.Close();
-        //}
-        //static void GenerateAnswer(string nameFile, int data, int length)
-        //{
-        //    StreamWriter sw = new StreamWriter(nameFile);
-        //    string s = "";
-        //    for (int i = 0; i <= data; i++)
-        //    {
-        //        if (i == 0)
-        //        {
-        //            s = "id, body, userID, mainAnswer, questionID, time";
-        //            sw.WriteLine(s);
-        //        }
-        //        else
-        //        {
-        //            int num = i;
-        //            Random rand = new Random();
-        //            string databaseFileName = "/home/mariya/Desktop/projects/progbase3/Progbase3/data/dataBase";
-        //            SqliteConnection connection = new SqliteConnection($"Data Source={databaseFileName}");
-        //            connection.Open();
-        //            UserRepository repository = new UserRepository(connection);
-        //            QuestionsRepository repository2 = new QuestionsRepository(connection);
-        //            int lastId = repository.GetLastId();
-        //            int generateId = rand.Next(1, lastId + 1);
-        //            int lastQId = repository2.GetLastId();
-        //            int generateQId = rand.Next(1, lastQId + 1);
-        //            DateTime firstDate = repository2.GetById(generateQId).start;
-        //            DateTime secondDate = repository2.GetById(generateQId).end;
-        //            DateTime time = GenerateDate(firstDate, secondDate);
-
-        //            Answer newUs = new Answer(i, GenerateString(length), generateId, false, generateQId, time);
-        //            s = newUs.ToString();
-        //            sw.WriteLine(s);
-        //        }
-        //    }
-        //    sw.Close();
-        //}
-        //static void Main(string[] args)
-        //{
-        //    Console.WriteLine("Generate tables: users, questions, answers");
-        //    string type = Console.ReadLine();
-        //    switch (type)
-        //    {
-        //        case "users":
-        //            Console.WriteLine("Enter path to the file, number of users, length of user name, length of password: ");
-        //            string input = Console.ReadLine();
-        //            ProcessUser(input);
-        //            break;
-        //        case "questions":
-        //            Console.WriteLine("Enter path, number of questions, length of body, first and last date");
-        //            string inputquest = Console.ReadLine();
-        //            ProcessQuestion(inputquest);
-        //            break;
-        //        case "answers":
-        //            Console.WriteLine("Enter path, number of answers, length of body");
-        //            string inputanswers = Console.ReadLine();
-        //            ProcessAnswer(inputanswers);
-        //            break;
-        //        default:
-        //            Console.WriteLine("incorect table");
-        //            break;
-        //    }/*
-        //    string databaseFileName = "/home/mariya/Desktop/projects/progbase3/Progbase3/data/dataBase";
-        //    SqliteConnection connection = new SqliteConnection($"Data Source={databaseFileName}");
-        //    connection.Open();
-        //    ConnectionState state = connection.State;
-        //    QuestionsRepository repository = new QuestionsRepository(connection);
-        //    Console.WriteLine("enter id:");
-        //    int value = int.Parse(Console.ReadLine());
-        //    ListQuestions questionsCsv = repository.GetAllById(value);
-        //    if (questionsCsv.GetSize() == 0)
-        //    {
-        //        Console.WriteLine("There is no data to export");
-        //    }
-        //    else
-        //    {
-        //        string filePath = "./export.csv";
-        //        StreamWriter sw = new StreamWriter(filePath);
-        //        string s = "";
-        //        // string s = "id,author,book,year,createdAt";
-        //        //sw.WriteLine(s);
-        //        for (int i = 0; i < questionsCsv.GetSize(); i++)
-        //        {
-        //            Question question = questionsCsv.GetQuestion(i);
-        //            s = $"{question.id},{question.body},{question.user},{question.mainAnswer},{question.start},{question.end}";
-        //            if (i + 1 == questionsCsv.GetSize())
-        //                sw.Write(s);
-        //            else
-        //                sw.WriteLine(s);
-        //        }
-        //        sw.Close();
-        //    }*/
-        //}
-        //static void ProcessUser(string input)
-        //{
-        //    string[] substrings = input.Split(",");
-        //    if (substrings.Length != 4)
-        //    {
-        //        Console.WriteLine("incorrect arguments");
-        //        return;
-        //    }
-        //    string path = substrings[0];
-        //    int numberOfUsers;
-        //    bool check = int.TryParse(substrings[1], out numberOfUsers);
-        //    if (!check || numberOfUsers <= 0)
-        //    {
-        //        Console.WriteLine("incorrect number of users");
-        //        return;
-        //    }
-        //    int userNameLength;
-        //    bool check2 = int.TryParse(substrings[2], out userNameLength);
-        //    if (!check || userNameLength <= 0)
-        //    {
-        //        Console.WriteLine("incorrect length of name");
-        //        return;
-        //    }
-        //    int passwordLength;
-        //    bool check3 = int.TryParse(substrings[3], out passwordLength);
-        //    if (!check || passwordLength <= 0)
-        //    {
-        //        Console.WriteLine("incorrect length of pass");
-        //        return;
-        //    }
-        //    GenerateUser(path, numberOfUsers, userNameLength, passwordLength);
-        //}
-        //static void ProcessQuestion(string input)
-        //{
-        //    //string nameFile, int data, int length, DateTime firstLim, DateTime secondLim
-        //    string[] substrings = input.Split(",");
-        //    if (substrings.Length != 5)
-        //    {
-        //        Console.WriteLine("incorrect num of arguments");
-        //        return;
-        //    }
-        //    string path = substrings[0];
-        //    int numberOfQuest;
-        //    bool check = int.TryParse(substrings[1], out numberOfQuest);
-        //    if (!check || numberOfQuest <= 0)
-        //    {
-        //        Console.WriteLine("incorrect number of users");
-        //        return;
-        //    }
-        //    int qLength;
-        //    bool check2 = int.TryParse(substrings[2], out qLength);
-        //    if (!check || qLength <= 0)
-        //    {
-        //        Console.WriteLine("incorrect length of name");
-        //        return;
-        //    }
-        //    DateTime first;
-        //    try
-        //    {
-        //        first = DateTime.Parse(substrings[3]);
-        //    }
-        //    catch
-        //    {
-        //        Console.WriteLine("incorrect date");
-        //        return;
-        //    }
-        //    DateTime second;
-        //    try
-        //    {
-        //        second = DateTime.Parse(substrings[4]);
-        //    }
-        //    catch
-        //    {
-        //        Console.WriteLine("incorrect date");
-        //        return;
-        //    }
-        //    if (first > second)
-        //    {
-        //        Console.WriteLine("incorrect date");
-        //        return;
-        //    }
-        //    GenerateQuestion(path, numberOfQuest, qLength, first, second);
-        //}
-        //static void ProcessAnswer(string input)
-        //{
-        //    string[] substrings = input.Split(",");
-        //    if (substrings.Length != 3)
-        //    {
-        //        Console.WriteLine("incorrect num of arguments");
-        //        return;
-        //    }
-        //    string path = substrings[0];
-        //    int numberOfAnswers;
-        //    bool check = int.TryParse(substrings[1], out numberOfAnswers);
-        //    if (!check || numberOfAnswers <= 0)
-        //    {
-        //        Console.WriteLine("incorrect number of users");
-        //        return;
-        //    }
-        //    int aLength;
-        //    bool check2 = int.TryParse(substrings[2], out aLength);
-        //    if (!check || aLength <= 0)
-        //    {
-        //        Console.WriteLine("incorrect length of name");
-        //        return;
-        //    }
-        //    GenerateAnswer(path, numberOfAnswers, aLength);
-
-        //}
+        
         static void Main()
         {
             string dataPath = @"/home/mariya/Desktop/projects/progbase3/Progbase3/data/dataBase";
@@ -510,11 +167,11 @@ namespace ConsoleApp
             userRepository = new UserRepository(connection);
             answerRepository = new AnswerRepository(connection);
             questionRepository = new QuestionsRepository(connection);
-
-            SelectMainUser("vVPP0Zi");
-            curUser = mainUser;
-
             Application.Init();
+            ShowLogin();
+        }
+        static void InitMainWindow()
+        {
             Toplevel top = Application.Top;
             Rect pageFrame = new Rect(4, 8, top.Frame.Width, 10);
             curView = new ListView(pageFrame, new List<Answer>());
@@ -525,9 +182,85 @@ namespace ConsoleApp
             myAnswers.Clicked += ShowAnswersOfUser;
             Button allUsers = new Button(1, 5, "All users");
             allUsers.Clicked += ShowAllUsers;
-            mainWindow.Add(myAnswers, myQuestions, allUsers);
+            Button createQuestion = new Button(1, 6, "Create question");
+            createQuestion.Clicked += CreateQuestion;
+            mainWindow.Add(myAnswers, myQuestions, allUsers, createQuestion);
             top.Add(mainWindow);
             Application.Run();
+        }
+        static void ShowLogin()
+        {
+            mainUser = null;
+            curUser = new User();
+            Label userLabel = new Label(4, 5, "Username");
+            TextField username = new TextField(4, 6, 10, "");
+            Label passLabel = new Label(4, 7, "Password");
+            TextField password = new TextField(4, 8, 10, "");
+            Button login = new Button(4, 9, "Log in");
+            Button register = new Button(4, 10, "To register");
+            Window window = new Window("Login");
+            password.TextChanging += OnPasswordTextChange;
+            username.TextChanging += OnUsernameTextChange;
+            login.Clicked += TryLogin;
+            register.Clicked += ShowRegister;
+            window.Add(userLabel, username, passLabel, password, login, register);
+            Application.Top.RemoveAll();
+            Application.Top.Add(window);
+            Application.Run();
+        }
+        static void ShowRegister()
+        {
+            curUser = new User();
+            Label userLabel = new Label(4, 5, "Username");
+            TextField username = new TextField(4, 6, 10, "");
+            Label passLabel = new Label(4, 7, "Password");
+            TextField password = new TextField(4, 8, 10, "");
+            Button login = new Button(4, 10, "To login");
+            Button register = new Button(4, 9, "Register");
+            Window window = new Window("Register");
+            password.TextChanging += OnPasswordTextChange;
+            username.TextChanging += OnUsernameTextChange;
+            login.Clicked += ShowLogin;
+            register.Clicked += TryRegister;
+            window.Add(userLabel, username, passLabel, password, login, register);
+            Application.Top.RemoveAll();
+            Application.Top.Add(window);
+            Application.Run();
+        }
+        static void OnPasswordTextChange(TextChangingEventArgs args)
+        {
+            curUser.password = args.NewText.ToString();
+        }
+        static void OnUsernameTextChange(TextChangingEventArgs args)
+        {
+            curUser.name = args.NewText.ToString();
+        }
+        static void TryRegister()
+        {
+            mainUser = Authentication.AcceptRegistration(userRepository, curUser.name, curUser.password);
+            if(mainUser != null)
+            {
+                curUser = mainUser;
+                userRepository.Insert(mainUser);
+                InitMainWindow();
+            }
+            else
+            {
+                MessageBox.ErrorQuery("Error", "Username already exists", "Ok");
+            }
+        }
+        static void TryLogin()
+        {
+            mainUser = Authentication.AcceptLogin(userRepository, curUser.name, curUser.password);
+            if (mainUser != null)
+            {
+                curUser = mainUser;
+                InitMainWindow();
+            }
+            else
+            {
+                MessageBox.ErrorQuery("Error", "Wrong username or password", "Ok");
+            }
         }
         static void OnAnswerClick(ListViewItemEventArgs args)
         {
@@ -550,18 +283,66 @@ namespace ConsoleApp
             curUser = null;
             curQuestion = null;
             curAnswer.user = userRepository.GetAnswerAuthor(curAnswer.id);
+            curAnswer.question = questionRepository.GetByAnswer(curAnswer.id);
             Label answerT = new Label(4, 7, "Answer text:");
-            Label body = new Label(4, 8, curAnswer.body);
+            TextView body = new TextView(new Rect(4, 8, 15, 10));
+            body.Text = curAnswer.body;
             Button toQuestion = new Button(4, 12, "To question");
             toQuestion.Clicked += ShowQuestionOfAnswer;
             Window window = new Window("Answer");
             Label author = new Label(4, 2, "Author: " + curAnswer.user.name);
             author.Clicked += ShowAuthorOfAnswer;
+
+            bool isMainUserAnswer = answerRepository.GetAllUserAns(mainUser.id).FindIndex(x => x.id == curAnswer.id) != -1;
+            if (isMainUserAnswer || mainUser.isModerator)
+            {
+                Button deleteAnswer = new Button(4, 3, "Delete answer");
+                deleteAnswer.Clicked += DeleteAnswer;
+                window.Add(deleteAnswer);
+            }
+            if(isMainUserAnswer)
+            {
+                Button updateAnswer = new Button(4, 4, "Update answer");
+                updateAnswer.Clicked += UpdateAnswer;
+                window.Add(updateAnswer);
+            }
+            if(userRepository.GetQuestionAuthor((questionRepository.GetByAnswer(curAnswer.id).id)).name == mainUser.name)
+            {
+                isMainAnswer = new CheckBox(4, 4, "Selected answer");
+                isMainAnswer.Checked = curAnswer.mainAnswer;
+                isMainAnswer.Toggled += OnMainAnswerChange;
+            }    
             window.Add(body, author, toQuestion);
+
             Application.Top.RemoveAll();
             Application.Top.Add(window);
             Application.Run();
         }
+        static void OnMainAnswerChange(bool previousChecked)
+        {
+            if(previousChecked)
+            {
+                curAnswer.mainAnswer = false;
+                answerRepository.UpdateAnswer(curAnswer);
+            }
+            else
+            {
+                if(answerRepository.GetByQuestionId(curAnswer.question.id).FindIndex(x => x.mainAnswer == true) != -1)
+                {
+                    isMainAnswer.Checked = false;
+                    MessageBox.ErrorQuery(
+              "Error",
+              "Already selected answer",
+              "Ok");
+                }
+                else
+                {
+                    curAnswer.mainAnswer = true;
+                    answerRepository.UpdateAnswer(curAnswer);
+                }
+            }
+        }
+
         static void ShowCurUser()
         {
             if (curUser.name != mainUser.name)
@@ -597,9 +378,25 @@ namespace ConsoleApp
             Window window = new Window("Question");
             Label author = new Label(4, 2, "Author: " + curQuestion.user.name);
             Button getAnswers = new Button(4, 3, "To answers");
+            Button addAnswer = new Button(4, 4, "Add answer");
+            addAnswer.Clicked += CreateAnswer;
             getAnswers.Clicked += ShowAnswersOfQuestion;
             author.Clicked += ShowAuthorOfQuestion;
-            window.Add(body, author, getAnswers);
+
+            bool isMainUserQuestion = questionRepository.GetAllByUser(mainUser.id).FindIndex(x => x.id == curQuestion.id) != -1;
+            if (isMainUserQuestion || mainUser.isModerator)
+            {
+                Button deleteQuestion = new Button(4, 5, "Delete question");
+                deleteQuestion.Clicked += DeleteQuestion;
+                window.Add(deleteQuestion);
+            }
+            if(isMainUserQuestion)
+            {
+                Button updateQuestion = new Button(4, 6, "Update question");
+                updateQuestion.Clicked += UpdateQuestion;
+                window.Add(updateQuestion);
+            }
+            window.Add(body, author, getAnswers, addAnswer);
             Application.Top.RemoveAll();
             Application.Top.Add(window);
             Application.Run();
@@ -649,6 +446,171 @@ namespace ConsoleApp
             InitiateListWindow<User>(curUsers, "All users");
         }
 
+        static void CreateAnswer()
+        {
+            curAnswer = new Answer();
+            curAnswer.user = mainUser;
+            curAnswer.question = curQuestion;
+            curAnswer.time = DateTime.Now;
+            TextField body = new TextField(1, 6, 50, "");
+            body.TextChanging += OnAnswerChange;
+            Button acceptButton = new Button(1, 2, "Create");
+            Button cancelButton = new Button(1, 3, "Cancel");
+            acceptButton.Clicked += TryAcceptAnswerCreation;
+            cancelButton.Clicked += ShowCurQuestion;
+            Window win = new Window("Create answer");
+            win.Add(body, acceptButton, cancelButton);
+            Application.Top.RemoveAll();
+            Application.Top.Add(win);
+            Application.Run();
+        }
+        static void TryAcceptAnswerCreation()
+        {
+            int resultButtonIndex = MessageBox.Query(
+              "Accept",
+              "Accept changes?",
+              "Yes", "No", "Cancel");
+            if (resultButtonIndex == 0)
+                AcceptAnswerCreation();
+            else if (resultButtonIndex == 1)
+                ShowCurQuestion();
+        }
+        static void AcceptAnswerCreation()
+        {
+            curAnswer.id = answerRepository.Insert(curAnswer);
+            ShowCurAnswer();
+        }
+        static void OnAnswerChange(TextChangingEventArgs args)
+        {
+            curAnswer.body = args.NewText.ToString();
+        }
+
+        static void CreateQuestion()
+        {
+            curQuestion = new Question();
+            curQuestion.user = mainUser;
+            curQuestion.start = DateTime.Now;
+            TextField body = new TextField(1, 6, 50, "");
+            body.TextChanging += OnQuestionChange;
+            Button acceptButton = new Button(1, 2, "Create");
+            Button cancelButton = new Button(1, 3, "Cancel");
+            acceptButton.Clicked += TryAcceptQuestionCreation;
+            cancelButton.Clicked += ToMain;
+            Window win = new Window("Create question");
+            win.Add(body, acceptButton, cancelButton);
+            Application.Top.RemoveAll();
+            Application.Top.Add(win);
+            Application.Run();
+        }
+        static void TryAcceptQuestionCreation()
+        {
+            int resultButtonIndex = MessageBox.Query(
+              "Accept",
+              "Accept changes?",
+              "Yes", "No", "Cancel");
+            if (resultButtonIndex == 0)
+                AcceptQuestionCreation();
+            else if (resultButtonIndex == 1)
+                ToMain();
+        }
+        static void AcceptQuestionCreation()
+        {
+            curQuestion.id = questionRepository.Insert(curQuestion);
+            ShowCurQuestion();
+        }
+        static void OnQuestionChange(TextChangingEventArgs args)
+        {
+            curQuestion.body = args.NewText.ToString();
+        }
+
+        static void DeleteQuestion()
+        {
+            int resultButtonIndex = MessageBox.ErrorQuery(
+              "Delete",
+              "Delete question?",
+              "Yes", "No");
+            if(resultButtonIndex == 0)
+            {
+                questionRepository.DeleteById(curQuestion.id);
+                answerRepository.DeleteAllAnswersOfQuestion(curQuestion.id);
+                curQuestion = null;
+                ToMain();
+            }
+        }
+        static void DeleteAnswer()
+        {
+            int resultButtonIndex = MessageBox.ErrorQuery(
+              "Delete",
+              "Delete answer?",
+              "Yes", "No");
+            if (resultButtonIndex == 0)
+            {
+                answerRepository.DeleteById(curAnswer.id);
+                curAnswer = null;
+                ToMain();
+            }
+        }
+
+        static void UpdateQuestion()
+        {
+            TextField body = new TextField(1, 6, 50, curQuestion.body);
+            body.TextChanging += OnQuestionChange;
+            Button acceptButton = new Button(1, 2, "Update");
+            Button cancelButton = new Button(1, 3, "Cancel");
+            acceptButton.Clicked += TryAcceptQuestionUpdate;
+            cancelButton.Clicked += ShowCurQuestion;
+            Window win = new Window("Update question");
+            win.Add(body, acceptButton, cancelButton);
+            Application.Top.RemoveAll();
+            Application.Top.Add(win);
+            Application.Run();
+        }
+        static void TryAcceptQuestionUpdate()
+        {
+            int resultButtonIndex = MessageBox.Query(
+              "Accept",
+              "Accept changes?",
+              "Yes", "No", "Cancel");
+            if (resultButtonIndex == 0)
+                AcceptQuestionUpdate();
+            else if (resultButtonIndex == 1)
+                ShowCurQuestion();
+        }
+        static void AcceptQuestionUpdate()
+        {
+            questionRepository.UpdateQuestion(curQuestion);
+            ShowCurQuestion();
+        }
+        static void UpdateAnswer()
+        {
+            TextField body = new TextField(1, 6, 50, curAnswer.body);
+            body.TextChanging += OnAnswerChange;
+            Button acceptButton = new Button(1, 2, "Create");
+            Button cancelButton = new Button(1, 3, "Cancel");
+            acceptButton.Clicked += TryAcceptAnswerUpdate;
+            cancelButton.Clicked += ShowCurAnswer;
+            Window win = new Window("Update answer");
+            win.Add(body, acceptButton, cancelButton);
+            Application.Top.RemoveAll();
+            Application.Top.Add(win);
+            Application.Run();
+        }
+        static void TryAcceptAnswerUpdate()
+        {
+            int resultButtonIndex = MessageBox.Query(
+              "Accept",
+              "Accept changes?",
+              "Yes", "No", "Cancel");
+            if (resultButtonIndex == 0)
+                AcceptAnswerUpdate();
+            else if (resultButtonIndex == 1)
+                ShowCurAnswer();
+        }
+        static void AcceptAnswerUpdate()
+        {
+            answerRepository.UpdateAnswer(curAnswer);
+            ShowCurAnswer();
+        }
         static void InitiateListWindow<T>(List<T> curList, string windowName)
         {
             currentPage = 1;
@@ -698,32 +660,10 @@ namespace ConsoleApp
 
         static void ToMain()
         {
+            curUser = mainUser;
             Application.Top.RemoveAll();
             Application.Top.Add(mainWindow);
             //Application.Run();
-        }
-
-        static void SelectMainUser(string userName)
-        {
-            mainUser = userRepository.GetByName(userName);
-            mainUser.answers = answerRepository.GetAllUserAns(mainUser.id);
-            mainUser.questions = questionRepository.GetAllByUser(mainUser.id);
-            foreach (Question question in mainUser.questions)
-            {
-                question.user = mainUser;
-                question.listAnswers = answerRepository.GetByQuestionId(question.id);
-                foreach (Answer answer in question.listAnswers)
-                {
-                    answer.question = question;
-                }
-                question.user = userRepository.GetQuestionAuthor(question.id);
-            }
-            foreach (Answer answer in mainUser.answers)
-            {
-                answer.user = mainUser;
-                answer.question = questionRepository.GetByAnswer(answer.id);
-                answer.question.user = userRepository.GetQuestionAuthor(answer.question.id);
-            }
         }
 
         static void SetCurrentPage()

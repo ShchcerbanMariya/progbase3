@@ -121,6 +121,7 @@ public class UserRepository
         reader.Close();
         return postsToExport;
     }
+     
     public User GetByName(string name)
     {
         connection.Open();
