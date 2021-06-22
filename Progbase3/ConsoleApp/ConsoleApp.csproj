@@ -5,9 +5,15 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+<<<<<<< HEAD
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite" Version="5.0.5" />
     <PackageReference Include="Terminal.Gui" Version="1.1.1" />
+=======
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="5.0.5" />
+    <PackageReference Include="Terminal.Gui" Version="1.1.1" />
+>>>>>>> 7cba30f923206795fb12ece32b2ea17fe5f6c188
   </ItemGroup>
 
 
