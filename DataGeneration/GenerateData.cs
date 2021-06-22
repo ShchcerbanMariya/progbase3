@@ -1,16 +1,20 @@
 using System.IO;
-using ConsoleApp;
 using Microsoft.Data.Sqlite;
 using System;
+using MainClassLib;
+using ConsoleApp;
+using ServiceLib;
 public static class GenerateData
 {
+    public static void Main(string[] args)
+    {}
     public static void GenerateDatabase(int usersCount, int answersCount, int questionsCount, DateTime start, DateTime end)
     {
-        string dataPath = @"C:\Users\Myhasik\Desktop\progbase3\Progbase3\data\dataBase.db";
+        string dataPath = @"../data/new";
         SqliteConnection connection = new SqliteConnection($"Data Source={dataPath}");
-        UserRepository userRepository = new UserRepository(connection);
-        AnswerRepository answerRepository = new AnswerRepository(connection);
-        QuestionsRepository questionRepository = new QuestionsRepository(connection);
+        UserRepository userRepository = new UserRepository(connection, dataPath);
+        AnswerRepository answerRepository = new AnswerRepository(connection, dataPath);
+        QuestionsRepository questionRepository = new QuestionsRepository(connection, dataPath);
         Answer[] answers = new Answer[answersCount];
         User[] users = new User[usersCount];
         Question[] questions = new Question[questionsCount];

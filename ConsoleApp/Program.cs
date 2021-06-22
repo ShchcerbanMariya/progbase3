@@ -1,113 +1,18 @@
 ﻿using System;
+using System.Text;
 using System.IO;
 using System.Collections.Generic;
 using Terminal.Gui;
+using MainClassLib;
 using Microsoft.Data.Sqlite;
+using ServiceLib;
 using System.Xml.Serialization;
-
 
 namespace ConsoleApp
 {
-    public class User
-    {
-        [XmlElement("Id")]
-        public int id;
-        public string name;
-        public string password;
-        public bool isModerator;
-        public List<Question> questions = new List<Question>();
-        public List<Answer> answers = new List<Answer>();
-        public User()
-        {
-            this.id = 0;
-            this.name = "";
-            this.password = "";
-            this.isModerator = false;
-            this.questions = null;
-            this.answers = null;
-        }
-        public User(int id, string name, string password, bool isModerator)
-        {
-            this.id = id;
-            this.name = name;
-            this.password = password;
-            this.isModerator = isModerator;
-        }
-        public User(int id, string name, string password, bool isModerator, List<Question> questions, List<Answer> answers)
-        {
-            this.id = id;
-            this.name = name;
-            this.password = password;
-            this.isModerator = isModerator;
-            this.questions = new List<Question>(questions);
-            this.answers = new List<Answer>(answers);
-        }
-        public override string ToString()
-        {
-            return $"{id}, {name}";
-        }
-    }
-
-    public class Question
-    {
-        [XmlElement("Id")]
-        public int id;
-        [XmlElement("Title")]
-        public string title;
-        [XmlElement("Body")]
-        public string body;
-        [XmlElement("Author")]
-        public User user;
-        [XmlIgnore]
-        public List<Answer> listAnswers = new List<Answer>();
-        [XmlElement("MainAnswer")]
-        public Answer mainAnswer = null;
-        public DateTime start;
-        public DateTime end = new DateTime();
-        public Question()
-        {
-
-        }
-        public override string ToString()
-        {
-            return $"{id},{title},{user}";
-        }
-
-    }
-    public class Answer
-    {
-        [XmlElement("Id")]
-        public int id;
-        [XmlElement("Title")]
-        public string title;
-        [XmlElement("Body")]
-        public string body;
-        [XmlElement("Author")]
-        public User user;
-        public Question question;
-        public DateTime time;
-        public Answer()
-        {
-            
-        }
-         public Answer(int id, string title, string body, DateTime time, int userId)
-        {
-            this.id = id;
-            user = new User();
-            user.id = userId;
-            this.title = title;
-            this.body = body;
-            this.time = time;
-        }
-        public override string ToString()
-        {
-            return $"{id},{title}";
-        }
-
-    }
-
     class Program
     {
+        static string serializedFilePath = "../ConsoleApp/serialized.xml";
         static User mainUser;
 
         static User curUser;
@@ -123,29 +28,31 @@ namespace ConsoleApp
         static Window mainWindow;
         static bool correctInput;
 
-        static UserRepository userRepository;
+        /*static UserRepository userRepository;
         static AnswerRepository answerRepository;
-        static QuestionsRepository questionRepository;
+        static QuestionsRepository questionRepository;*/
 
         static MenuBar menu;
 
-
+        static Label curTxt;
         static DateTime start;
         static DateTime end;
         static string path;
 
-        const int pageSize = 1;
+        const int pageSize = 10;
         static int currentPage = 1;
         static void Main()
         {
-            string dataPath = @"../data/dataBase.db";
-            bool ch = File.Exists(dataPath);
-            
+            string dataPath = @"../data/new";
             SqliteConnection connection = new SqliteConnection($"Data Source={dataPath}");
-        //    connection.Open();
-            userRepository = new UserRepository(connection);
-            answerRepository = new AnswerRepository(connection);
-            questionRepository = new QuestionsRepository(connection);
+            if (!File.Exists(dataPath))
+            {
+                Console.Write("Check DB");
+                return;
+            }
+            /* userRepository = new UserRepository(connection);
+             answerRepository = new AnswerRepository(connection);
+             questionRepository = new QuestionsRepository(connection);*/
             Application.Init();
             menu = new MenuBar(new MenuBarItem[] {
            new MenuBarItem ("_File", new MenuItem [] {
@@ -153,12 +60,35 @@ namespace ConsoleApp
                new MenuItem("_Export", "", ShowExport),
                new MenuItem("_Import", "", ToMain),
                new MenuItem("_Exit", "", ShowLogin),
+
            }),
        });
             ShowLogin();
             //GenerateData.GenerateDatabase(20, 100, 50, new DateTime(20, 10, 10), new DateTime(22, 10, 10));
-            //ImportExport.Export(new DateTime(20, 10, 10), new DateTime(22, 10, 10), @", questionRepository);
+            //ImportExport.Export(new DateTime(20, 10, 10), new DateTime(22, 10, 10), @"C:\Users\Myhasik\projects\test.xml", questionRepository);*/
         }
+        public static byte[] Serialize<T>(T data, string filePath)
+        {
+            XmlSerializer ser = new XmlSerializer(typeof(T));
+            System.IO.File.WriteAllText(filePath, "");
+            System.IO.StreamWriter writer = new System.IO.StreamWriter(filePath);
+            ser.Serialize(writer, data);
+            writer.Close();
+            string text = System.IO.File.ReadAllText(filePath);
+            byte[] bytes = Encoding.ASCII.GetBytes(text);
+
+
+            return bytes;
+        }
+        public static T Deserialize<T>(string filePath)
+        {
+            XmlSerializer ser = new XmlSerializer(typeof(T));
+            StreamReader reader = new StreamReader(filePath);
+            T value = (T)ser.Deserialize(reader);
+            reader.Close();
+            return value;
+        }
+
         static void InitMainWindow()
         {
             Toplevel top = Application.Top;
@@ -171,9 +101,11 @@ namespace ConsoleApp
             myAnswers.Clicked += ShowAnswersOfUser;
             Button allUsers = new Button(1, 5, "All users");
             allUsers.Clicked += ShowAllUsers;
-            Button createQuestion = new Button(1, 6, "Create question");
+            Button allquest = new Button(1, 6, "All questions");
+            allquest.Clicked += ShowAllQuestions;
+            Button createQuestion = new Button(1, 7, "Create question");
             createQuestion.Clicked += CreateQuestion;
-            mainWindow.Add(myAnswers, myQuestions, allUsers, createQuestion);
+            mainWindow.Add(myAnswers, myQuestions, allUsers, createQuestion, allquest);
             top.Add(mainWindow, menu);
             Application.Run();
         }
@@ -192,18 +124,18 @@ namespace ConsoleApp
             acceptButton.Clicked += GenerateExport;
             cancelButton.Clicked += ToMain;
             Window win = new Window("Export");
-            win.Add( acceptButton, cancelButton, start, startL, endL, end, selectPath);
+            win.Add(acceptButton, cancelButton, start, startL, endL, end, selectPath);
             Application.Top.RemoveAll();
             Application.Top.Add(win);
             Application.Run();
         }
         static void GenerateExport()
         {
-            ImportExport.Export(start, end, path, questionRepository);
+            ImportExport.Export(start, end, path);
         }
         static void OnStartDataChanged(TextChangingEventArgs args)
         {
-           if(!DateTime.TryParse(args.NewText.ToString(), out start))
+            if (!DateTime.TryParse(args.NewText.ToString(), out start))
             {
                 start = new DateTime();
             }
@@ -282,11 +214,14 @@ namespace ConsoleApp
         }
         static void TryRegister()
         {
-            mainUser = Authentication.AcceptRegistration(userRepository, curUser.name, curUser.password);
-            if(mainUser != null)
+            mainUser = Authentication.AcceptRegistration(curUser.name, curUser.password);
+            if (mainUser != null)
             {
                 curUser = mainUser;
-                userRepository.Insert(mainUser);
+                Serialize<User>(curUser, serializedFilePath);
+                RemoteService.RemoteServiceCommand("InserUser$" + mainUser);
+                Deserialize<int>(serializedFilePath);
+                // userRepository.Insert(mainUser);
                 InitMainWindow();
             }
             else
@@ -296,7 +231,7 @@ namespace ConsoleApp
         }
         static void TryLogin()
         {
-            mainUser = Authentication.AcceptLogin(userRepository, curUser.name, curUser.password);
+            mainUser = Authentication.AcceptLogin(curUser.name, curUser.password);
             if (mainUser != null)
             {
                 curUser = mainUser;
@@ -327,8 +262,10 @@ namespace ConsoleApp
         {
             curUser = null;
             curQuestion = null;
-            curAnswer.user = userRepository.GetAnswerAuthor(curAnswer.id);
-            curAnswer.question = questionRepository.GetByAnswer(curAnswer.id);
+            RemoteService.RemoteServiceCommand("GetAnswerAuthor$" + curAnswer.id);
+            curAnswer.user = /*userRepository.GetAnswerAuthor(curAnswer.id); */ Deserialize<User>(serializedFilePath);
+            RemoteService.RemoteServiceCommand("GetQByAnswer$" + curAnswer.id);
+            curAnswer.question = /*questionRepository.GetByAnswer(curAnswer.id);*/ Deserialize<Question>(serializedFilePath);
             Label answerT = new Label(4, 7, "Answer text:");
             TextView body = new TextView(new Rect(4, 8, 15, 10));
             body.Text = curAnswer.body;
@@ -337,20 +274,20 @@ namespace ConsoleApp
             Window window = new Window(curAnswer.title);
             Label author = new Label(4, 2, "Author: " + curAnswer.user.name);
             author.Clicked += ShowAuthorOfAnswer;
-
-            bool isMainUserAnswer = answerRepository.GetAllUserAns(mainUser.id).FindIndex(x => x.id == curAnswer.id) != -1;
+            RemoteService.RemoteServiceCommand("GetAllUserAns$" + mainUser.id);
+            bool isMainUserAnswer = /*answerRepository.GetAllUserAns(mainUser.id)*/ Deserialize<List<Answer>>(serializedFilePath).FindIndex(x => x.id == curAnswer.id) != -1;
             if (isMainUserAnswer || mainUser.isModerator)
             {
                 Button deleteAnswer = new Button(4, 3, "Delete answer");
                 deleteAnswer.Clicked += DeleteAnswer;
                 window.Add(deleteAnswer);
             }
-            if(isMainUserAnswer)
+            if (isMainUserAnswer)
             {
                 Button updateAnswer = new Button(4, 4, "Update answer");
                 updateAnswer.Clicked += UpdateAnswer;
                 window.Add(updateAnswer);
-            }   
+            }
             window.Add(body, author, toQuestion);
 
             Application.Top.RemoveAll();
@@ -362,7 +299,7 @@ namespace ConsoleApp
         {
             if (curUser.name != mainUser.name)
             {
-                curAnswer = null; 
+                curAnswer = null;
                 curQuestion = null;
                 Button myQuestions = new Button(1, 3, "User questions");
                 myQuestions.Clicked += ShowQuestionsOfUser;
@@ -384,20 +321,22 @@ namespace ConsoleApp
             correctInput = true;
             curUser = null;
             curAnswer = null;
-            curQuestion.user = userRepository.GetQuestionAuthor(curQuestion.id);
-            curQuestion.mainAnswer = answerRepository.GetMainAnswer(curQuestion.id); 
+            RemoteService.RemoteServiceCommand("GetQuestionAuthor$" + curQuestion.id);
+            curQuestion.user = /*userRepository.GetQuestionAuthor(curQuestion.id)*/ Deserialize<User>(serializedFilePath);
+            RemoteService.RemoteServiceCommand("GetMainAnswer$" + curQuestion.id);
+            curQuestion.mainAnswer = /*answerRepository.GetMainAnswer(curQuestion.id);*/ Deserialize<Answer>(serializedFilePath);
             Label answerT = new Label(4, 7, "Question text:");
             TextView body = new TextView(new Rect(4, 8, Application.Top.Frame.Width, 10))
             {
                 ReadOnly = true
             };
-            int rowLength = 30; 
-            if(curQuestion.body.Length < rowLength)
+            int rowLength = 30;
+            if (curQuestion.body.Length < rowLength)
                 body.Text = curQuestion.body;
             else
             {
                 string parsedBody = curQuestion.body;
-                for(int i = 0; i < curQuestion.body.Length / rowLength; i++)
+                for (int i = 0; i < curQuestion.body.Length / rowLength; i++)
                 {
                     parsedBody = parsedBody.Insert((i + 1) * rowLength, "\r\n");
                 }
@@ -411,15 +350,15 @@ namespace ConsoleApp
             addAnswer.Clicked += CreateAnswer;
             getAnswers.Clicked += ShowAnswersOfQuestion;
             author.Clicked += ShowAuthorOfQuestion;
-
-            bool isMainUserQuestion = questionRepository.GetAllByUser(mainUser.id).FindIndex(x => x.id == curQuestion.id) != -1;
+            RemoteService.RemoteServiceCommand("GetAllQuestionsByUser$" + mainUser.id);
+            bool isMainUserQuestion =/* questionRepository.GetAllByUser(mainUser.id)*/Deserialize<List<Question>>(serializedFilePath).FindIndex(x => x.id == curQuestion.id) != -1;
             if (isMainUserQuestion || mainUser.isModerator)
             {
                 Button deleteQuestion = new Button(4, 5, "Delete question");
                 deleteQuestion.Clicked += DeleteQuestion;
                 window.Add(deleteQuestion);
             }
-            if(isMainUserQuestion)
+            if (isMainUserQuestion)
             {
                 Button updateQuestion = new Button(4, 6, "Update question");
                 updateQuestion.Clicked += UpdateQuestion;
@@ -442,26 +381,30 @@ namespace ConsoleApp
         }
         static void ShowQuestionOfAnswer()
         {
-            curQuestion = questionRepository.GetByAnswer(curAnswer.id);
+            RemoteService.RemoteServiceCommand("GetQByAnswer$" + curAnswer.id);
+            curQuestion = /*questionRepository.GetByAnswer(curAnswer.id);*/Deserialize<Question>(serializedFilePath);
             ShowCurQuestion();
         }
         static void ShowAnswersOfUser()
         {
-            curAnswers = answerRepository.GetAllUserAns(curUser.id);
+            RemoteService.RemoteServiceCommand("GetAllUserAns$" + curUser.id);
+            curAnswers = /*answerRepository.GetAllUserAns(curUser.id);*/ Deserialize<List<Answer>>(serializedFilePath);
             curQuestions = null;
             curUsers = null;
             InitiateListWindow<Answer>(curAnswers, "Answers of user " + curUser.name);
         }
         static void ShowQuestionsOfUser()
         {
-            curQuestions = questionRepository.GetAllByUser(curUser.id);
+            RemoteService.RemoteServiceCommand("GetAllQuestionsByUser$" + curUser.id);
+            curQuestions = /*questionRepository.GetAllByUser(curUser.id);*/ Deserialize<List<Question>>(serializedFilePath);
             curAnswers = null;
             curUsers = null;
             InitiateListWindow<Question>(curQuestions, "Questions of user " + curUser.name);
         }
         static void ShowAnswersOfQuestion()
         {
-            curAnswers = answerRepository.GetByQuestionId(curQuestion.id);
+            RemoteService.RemoteServiceCommand("GetByQuestionId$" + curQuestion.id);
+            curAnswers = /*answerRepository.GetByQuestionId(curQuestion.id);*/ Deserialize<List<Answer>>(serializedFilePath);
             curQuestions = null;
             curUsers = null;
             InitiateListWindow<Answer>(curAnswers, "Answers for question " + curQuestion.id);
@@ -470,9 +413,19 @@ namespace ConsoleApp
         {
             curQuestions = null;
             curAnswers = null;
-            curUsers = userRepository.GetAll();
+            RemoteService.RemoteServiceCommand("GetAllUsers$");
+            curUsers = /*userRepository.GetAll();*/ Deserialize<List<User>>(serializedFilePath);
             InitiateListWindow<User>(curUsers, "All users");
         }
+        static void ShowAllQuestions()
+        {
+            RemoteService.RemoteServiceCommand("GetAllQuestions$");
+            curQuestions = /*questionRepository.GetAll();*/ Deserialize<List<Question>>(serializedFilePath);
+            curAnswers = null;
+            curUsers = null;
+            InitiateListWindowWithLooking<Question>(curQuestions, "All question");
+        }
+
 
         static void CreateAnswer()
         {
@@ -481,7 +434,10 @@ namespace ConsoleApp
             curAnswer.question = curQuestion;
             curAnswer.time = DateTime.Now;
             TextField body = new TextField(1, 6, 50, "");
+            //TextField id = new TextField(1, 8, 50, "");
             body.TextChanging += OnAnswerChange;
+            if (curAnswer.title == null)
+                curAnswer.title = "answer tp q:" + curAnswer.question.id;
             Button acceptButton = new Button(1, 2, "Create");
             Button cancelButton = new Button(1, 3, "Cancel");
             acceptButton.Clicked += TryAcceptAnswerCreation;
@@ -505,13 +461,17 @@ namespace ConsoleApp
         }
         static void AcceptAnswerCreation()
         {
-            curAnswer.id = answerRepository.Insert(curAnswer);
+            Serialize<Answer>(curAnswer, serializedFilePath);
+            RemoteService.RemoteServiceCommand("InsertANswer$" + curAnswer);
+            curAnswer.id = /*answerRepository.Insert(curAnswer);*/
+            Deserialize<int>(serializedFilePath);
             ShowCurAnswer();
         }
         static void OnAnswerChange(TextChangingEventArgs args)
         {
             curAnswer.body = args.NewText.ToString();
         }
+
 
         static void CreateQuestion()
         {
@@ -547,7 +507,10 @@ namespace ConsoleApp
         }
         static void AcceptQuestionCreation()
         {
-            curQuestion.id = questionRepository.Insert(curQuestion);
+            Serialize<Question>(curQuestion, serializedFilePath);
+            RemoteService.RemoteServiceCommand("InsertQuestion$" + curQuestion);
+            curQuestion.id = //questionRepository.Insert(curQuestion);
+            Deserialize<int>(serializedFilePath);
             ShowCurQuestion();
         }
         static void OnQuestionChange(TextChangingEventArgs args)
@@ -561,25 +524,29 @@ namespace ConsoleApp
         static void OnMainAnswerId(TextChangingEventArgs args)
         {
             int id;
-            if(args.NewText.ToString() == "")
+            if (args.NewText.ToString() == "")
             {
                 curQuestion.mainAnswer = null;
             }
-            else if(!int.TryParse(args.NewText.ToString(), out id))
+            else if (!int.TryParse(args.NewText.ToString(), out id))
             {
                 curQuestion.mainAnswer = null;
                 correctInput = false;
             }
             else
             {
-                Answer answer = answerRepository.GetById(id);
+                RemoteService.RemoteServiceCommand("GetAnswerById$" + id);
+                Answer answer = //answerRepository.GetById(id);
+                Deserialize<Answer>(serializedFilePath);
                 if (answer != null)
                 {
-                    if(questionRepository.GetByAnswer(answer.id).id == curQuestion.id)
+                    RemoteService.RemoteServiceCommand("GetQByAnswer$" + answer.id);
+                    if (/*questionRepository.GetByAnswer(answer.id)*/Deserialize<Question>(serializedFilePath).id == curQuestion.id)
                     {
                         correctInput = true;
-                        curQuestion.mainAnswer = answerRepository.GetById(id);
-
+                        RemoteService.RemoteServiceCommand("GetAnswerById$" + id);
+                        curQuestion.mainAnswer = //answerRepository.GetById(id);
+                        Deserialize<Answer>(serializedFilePath);
                     }
                     else
                     {
@@ -598,10 +565,14 @@ namespace ConsoleApp
               "Delete",
               "Delete question?",
               "Yes", "No");
-            if(resultButtonIndex == 0)
+            if (resultButtonIndex == 0)
             {
-                questionRepository.DeleteById(curQuestion.id);
-                answerRepository.DeleteAllAnswersOfQuestion(curQuestion.id);
+                RemoteService.RemoteServiceCommand("DeleteQuestionById$" + curQuestion.id);
+                //questionRepository.DeleteById(curQuestion.id);
+                Deserialize<int>(serializedFilePath);
+                RemoteService.RemoteServiceCommand("DeleteAllAnswersOfQuestion" + curQuestion.id);
+                Deserialize<int>(serializedFilePath);
+                //answerRepository.DeleteAllAnswersOfQuestion(curQuestion.id);
                 curQuestion = null;
                 ToMain();
             }
@@ -614,7 +585,9 @@ namespace ConsoleApp
               "Yes", "No");
             if (resultButtonIndex == 0)
             {
-                answerRepository.DeleteById(curAnswer.id);
+                RemoteService.RemoteServiceCommand("DeleteAnswerById" + curQuestion.id);
+                Deserialize<int>(serializedFilePath);
+                // answerRepository.DeleteById(curAnswer.id);
                 curAnswer = null;
                 ToMain();
             }
@@ -654,17 +627,20 @@ namespace ConsoleApp
         }
         static void AcceptQuestionUpdate()
         {
-            if(correctInput)
+            if (correctInput)
             {
-                questionRepository.UpdateQuestion(curQuestion);
+                Serialize<Question>(curQuestion, serializedFilePath);
+                RemoteService.RemoteServiceCommand("UpdateQuestion$" + curQuestion);
+                Deserialize<int>(serializedFilePath);
+                //questionRepository.UpdateQuestion(curQuestion);
                 ShowCurQuestion();
             }
             else
             {
-               MessageBox.ErrorQuery(
-              "Error",
-              "Wrong question id",
-              "Ok");
+                MessageBox.ErrorQuery(
+               "Error",
+               "Wrong question id",
+               "Ok");
             }
         }
         static void UpdateAnswer()
@@ -702,7 +678,10 @@ namespace ConsoleApp
         }
         static void AcceptAnswerUpdate()
         {
-            answerRepository.UpdateAnswer(curAnswer);
+            Serialize<Answer>(curAnswer, serializedFilePath);
+            RemoteService.RemoteServiceCommand("UpdateAnswer$" + curAnswer);
+            Deserialize<int>(serializedFilePath);
+            //answerRepository.UpdateAnswer(curAnswer);
             ShowCurAnswer();
         }
         static void InitiateListWindow<T>(List<T> curList, string windowName)
@@ -710,23 +689,25 @@ namespace ConsoleApp
             currentPage = 1;
             Toplevel top = Application.Top;
             top.RemoveAll();
-            
+
             Button nextPage = new Button(10, 2, "->");
             nextPage.Clicked += NextPage;
             Button prevPage = new Button(4, 2, "<-");
             prevPage.Clicked += PrevPage;
-            curView = new ListView(new Rect(4, 8, Application.Top.Frame.Width, 10), new List<Answer>());
+            curView = new ListView(new Rect(4, 8, Application.Top.Frame.Width, 10), new List<T>());
+            string page = currentPage.ToString();
+            curTxt = new Label(20, 2, page);
             curView.SetSource(GetPage<T>(curList));
             Button back = new Button(4, 3, "");
-            if(typeof(T) == typeof(Answer))
+            if (typeof(T) == typeof(Answer))
             {
                 curView.OpenSelectedItem += OnAnswerClick;
             }
-            else if(typeof(T) == typeof(Question))
+            else if (typeof(T) == typeof(Question))
             {
                 curView.OpenSelectedItem += OnQuestionClick;
             }
-            else if(typeof(T) == typeof(User))
+            else if (typeof(T) == typeof(User))
             {
                 curView.OpenSelectedItem += OnUserClick;
             }
@@ -736,16 +717,68 @@ namespace ConsoleApp
                 back.Text = "To question";
                 back.Clicked += ShowCurQuestion;
             }
-            else if(curUser != null)
+            else if (curUser != null)
             {
                 back.Text = "To user";
                 back.Clicked += ShowCurUser;
             }
             Window list = new Window(windowName);
 
-            top.Add(list, menu, curView, nextPage, prevPage, back);
+            top.Add(list, menu, curView, nextPage, prevPage, back, curTxt);
 
             Application.Run();
+        }
+        static void InitiateListWindowWithLooking<T>(List<T> curList, string windowName)
+        {
+            curQuestion = new Question();
+            currentPage = 1;
+            Toplevel top = Application.Top;
+            top.RemoveAll();
+            Button nextPage = new Button(10, 2, "->");
+            nextPage.Clicked += NextPage;
+            Button prevPage = new Button(4, 2, "<-");
+            TextField searchTxt = new TextField(4, 4, 15, "");
+            string page = currentPage.ToString();
+            curTxt = new Label(20, 2, page);
+            Button searchBtn = new Button(4, 6, "search");
+            searchBtn.Clicked += FindQuestions;
+            searchTxt.TextChanging += OnSearchText;
+            prevPage.Clicked += PrevPage;
+            curView = new ListView(new Rect(4, 8, Application.Top.Frame.Width, 10), new List<T>());
+            curView.SetSource(GetPage<T>(curList));
+            Button back = new Button(4, 3, "");
+            if (typeof(T) == typeof(Answer))
+            {
+                curView.OpenSelectedItem += OnAnswerClick;
+            }
+            else if (typeof(T) == typeof(Question))
+            {
+                curView.OpenSelectedItem += OnQuestionClick;
+            }
+            else if (typeof(T) == typeof(User))
+            {
+                curView.OpenSelectedItem += OnUserClick;
+            }
+
+            /*if (curQuestion != null)
+            {
+                back.Text = "To question";
+                back.Clicked += ShowCurQuestion;
+            }*/
+            if (curUser != null)
+            {
+                back.Text = "To user";
+                back.Clicked += ShowCurUser;
+            }
+            Window list = new Window(windowName);
+
+            top.Add(list, menu, curView, nextPage, prevPage, back, searchBtn, searchTxt, curTxt);
+
+            Application.Run();
+        }
+        static void OnSearchText(TextChangingEventArgs args)
+        {
+            curQuestion.body = args.NewText.ToString();
         }
 
         static void ToMain()
@@ -753,20 +786,28 @@ namespace ConsoleApp
             curUser = mainUser;
             Application.Top.RemoveAll();
             Application.Top.Add(mainWindow);
-            //Application.Run();
+            //Application.Runallques();
+        }
+        static void FindQuestions()
+        {
+            RemoteService.RemoteServiceCommand("GetAllContains$" + curQuestion.body);
+            curQuestions =// questionRepository.GetAllContains(curQuestion.body);
+            Deserialize<List<Question>>(serializedFilePath);
+            InitiateListWindowWithLooking<Question>(curQuestions, "questions");
         }
 
         static void SetCurrentPage()
         {
-            if(curQuestions != null)
+            curTxt.Text = currentPage.ToString();
+            if (curQuestions != null)
             {
                 curView.SetSource(GetPage<Question>(curQuestions));
             }
-            else if(curAnswers != null)
+            else if (curAnswers != null)
             {
                 curView.SetSource(GetPage<Answer>(curAnswers));
             }
-            else if(curUsers != null)
+            else if (curUsers != null)
             {
                 curView.SetSource(GetPage<User>(curUsers));
             }
@@ -796,11 +837,11 @@ namespace ConsoleApp
         static void NextPage()
         {
             int pageNum = 0;
-            if(curQuestions != null)
+            if (curQuestions != null)
             {
                 pageNum = GetPageNum<Question>(curQuestions);
             }
-            else if(curAnswers != null)
+            else if (curAnswers != null)
             {
                 pageNum = GetPageNum<Answer>(curAnswers);
             }
@@ -824,3 +865,4 @@ namespace ConsoleApp
         }
     }
 }
+

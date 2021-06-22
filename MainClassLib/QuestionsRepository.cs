@@ -1,18 +1,21 @@
 using System;
-using ConsoleApp;
 using System.Collections.Generic;
 using Microsoft.Data.Sqlite;
 using System.Globalization;
-namespace ConsoleApp
+using ServiceLib;
+namespace MainClassLib
 {
     public class QuestionsRepository
     {
 
         private SqliteConnection connection;
-        public QuestionsRepository(SqliteConnection connection)
+         private string filePath;
+        public QuestionsRepository(SqliteConnection connection, string filePath)
         {
             this.connection = connection;
+            this.filePath = filePath;
         }
+
         public Question GetById(int id)
         {
             connection.Open();
@@ -38,6 +41,51 @@ namespace ConsoleApp
             reader.Close();
             return question;
 
+        }
+        public List<Question> GetAll()
+        {
+            List<Question> questions = new List<Question>();
+            connection.Open();
+            SqliteCommand command = this.connection.CreateCommand();
+            command.CommandText = @"SELECT * FROM questions";
+            SqliteDataReader reader = command.ExecuteReader();
+            List<Question> postsToExport = new List<Question>();
+            while (reader.Read())
+            {
+                Question question = new Question();
+                question.id = int.Parse(reader.GetString(0));
+                question.title = reader.GetString(1);
+                question.body = reader.GetString(2);
+                question.start = DateTime.ParseExact(reader.GetString(4), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                question.end = DateTime.ParseExact(reader.GetString(5), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+                postsToExport.Add(question);
+            }
+            reader.Close();
+            return postsToExport;
+        }
+        public List<Question> GetAllContains(string text)
+        {
+            List<Question> questions = new List<Question>();
+            connection.Open();
+            SqliteCommand command = this.connection.CreateCommand();
+            command.CommandText = @"SELECT * FROM questions WHERE body LIKE $body";
+            command.Parameters.AddWithValue("$body", "%" + text + "%");
+            SqliteDataReader reader = command.ExecuteReader();
+            List<Question> postsToExport = new List<Question>();
+            while (reader.Read())
+            {
+                Question question = new Question();
+                question.id = int.Parse(reader.GetString(0));
+                question.title = reader.GetString(1);
+                question.body = reader.GetString(2);
+                question.start = DateTime.ParseExact(reader.GetString(4), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                question.end = DateTime.ParseExact(reader.GetString(5), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+                postsToExport.Add(question);
+            }
+            reader.Close();
+            return postsToExport;
         }
         public int DeleteById(int id)
         {
@@ -111,8 +159,10 @@ namespace ConsoleApp
                 question.id = int.Parse(reader.GetString(0));
                 question.title = reader.GetString(1);
                 question.body = reader.GetString(2);
-                question.start = DateTime.ParseExact(reader.GetString(4), "dd.MM.yyyy HH:mm:ss", CultureInfo.InvariantCulture);
-                question.end = DateTime.ParseExact(reader.GetString(5), "dd.MM.yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+                // question.start = DateTime.ParseExact(reader.GetString(4), "dd.MM.yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+                // question.end = DateTime.ParseExact(reader.GetString(5), "dd.MM.yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+                question.start = DateTime.Parse(reader.GetString(4));
+                question.end = DateTime.Parse(reader.GetString(5));
                 posts.Add(question);
             }
             reader.Close();
